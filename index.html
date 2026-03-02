@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班级生态园</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; background: linear-gradient(135deg, #e0f7fa 0%, #f3e5f5 100%); min-height: 100vh; }
+        .glass { background: rgba(255,255,255,0.95); border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
+        .pet-anim { animation: float 3s ease-in-out infinite; cursor: pointer; }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        .btn { transition: all 0.2s; }
+        .btn:active { transform: scale(0.95); }
+    </style>
+</head>
+<body class="p-4">
+    <div class="max-w-md mx-auto">
+        <!-- 班级选择 -->
+        <div id="classSelect" class="glass p-6 mb-4">
+            <h1 class="text-2xl font-bold text-center text-purple-800 mb-6">🌱 班级生态园</h1>
+            <p class="text-gray-600 text-center mb-4">请选择班级：</p>
+            <div class="space-y-3">
+                <button onclick="enterClass('三1班')" class="w-full p-4 bg-blue-500 text-white rounded-xl font-bold text-lg btn hover:bg-blue-600">
+                    📚 三年级一班
+                </button>
+                <button onclick="enterClass('三2班')" class="w-full p-4 bg-purple-500 text-white rounded-xl font-bold text-lg btn hover:bg-purple-600">
+                    📚 三年级二班
+                </button>
+            </div>
+        </div>
+
+        <!-- 学生登录 -->
+        <div id="studentLogin" class="hidden glass p-6 mb-4">
+            <h2 class="text-xl font-bold text-center mb-4" id="classTitle">三年级一班</h2>
+            <input type="text" id="studentName" placeholder="输入你的姓名" class="w-full p-3 border-2 border-purple-200 rounded-xl mb-3 text-center text-lg">
+            <button onclick="login()" class="w-full p-3 bg-green-500 text-white rounded-xl font-bold btn hover:bg-green-600">进入我的花园</button>
+            <button onclick="backToClass()" class="w-full p-2 mt-2 text-gray-500 text-sm">← 返回班级选择</button>
+        </div>
+
+        <!-- 选择宠物 -->
+        <div id="petSelect" class="hidden glass p-6 mb-4">
+            <h3 class="text-lg font-bold text-center mb-4">选择你的第一个伙伴：</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="selectPet('🌵','小刺球','plant')" class="p-4 bg-white rounded-xl border-2 border-transparent hover:border-green-400 btn">
+                    <div class="text-4xl mb-1">🌵</div>
+                    <div class="font-bold text-sm">仙人掌</div>
+                    <div class="text-xs text-gray-500">好养活</div>
+                </button>
+                <button onclick="selectPet('🐱','咪咪','animal')" class="p-4 bg-white rounded-xl border-2 border-transparent hover:border-orange-400 btn">
+                    <div class="text-4xl mb-1">🐱</div>
+                    <div class="font-bold text-sm">小猫咪</div>
+                    <div class="text-xs text-gray-500">可爱型</div>
+                </button>
+                <button onclick="selectPet('🌻','小太阳','plant')" class="p-4 bg-white rounded-xl border-2 border-transparent hover:border-yellow-400 btn">
+                    <div class="text-4xl mb-1">🌻</div>
+                    <div class="font-bold text-sm">向日葵</div>
+                    <div class="text-xs text-gray-500">爱阳光</div>
+                </button>
+                <button onclick="selectPet('🐶','旺财','animal')" class="p-4 bg-white rounded-xl border-2 border-transparent hover:border-blue-400 btn">
+                    <div class="text-4xl mb-1">🐶</div>
+                    <div class="font-bold text-sm">小狗</div>
+                    <div class="text-xs text-gray-500">忠诚型</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- 游戏主界面 -->
+        <div id="gameScreen" class="hidden">
+            <div class="glass p-4 mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-purple-800" id="displayClass">三1班</span>
+                    <span class="text-sm text-gray-600">👤 <span id="displayName">小明</span></span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="bg-yellow-100 px-2 py-1 rounded-full">💎 <span id="diamonds">100</span></span>
+                    <span class="bg-purple-100 px-2 py-1 rounded-full">⭐ Lv.<span id="level">1</span></span>
+                </div>
+            </div>
+
+            <div class="glass p-6 text-center mb-4">
+                <div id="petEmoji" class="text-8xl pet-anim mb-2" onclick="interact()">🌵</div>
+                <h3 id="petNameDisplay" class="text-xl font-bold">小刺球</h3>
+                <p class="text-xs text-gray-500 mb-4" id="petTypeDisplay">🌱 植物系</p>
+                
+                <!-- 状态条 -->
+                <div class="space-y-3 mb-4">
+                    <div>
+                        <div class="flex justify-between text-xs font-bold mb-1"><span>💧 水分</span><span id="waterText">80%</span></div>
+                        <div class="h-2 bg-gray-200 rounded-full"><div id="waterBar" class="h-full bg-blue-500 rounded-full transition-all" style="width:80%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs font-bold mb-1"><span>☀️ 阳光</span><span id="sunText">80%</span></div>
+                        <div class="h-2 bg-gray-200 rounded-full"><div id="sunBar" class="h-full bg-yellow-500 rounded-full transition-all" style="width:80%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs font-bold mb-1"><span>❤️ 心情</span><span id="moodText">80%</span></div>
+                        <div class="h-2 bg-gray-200 rounded-full"><div id="moodBar" class="h-full bg-red-500 rounded-full transition-all" style="width:80%"></div></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="action('water')" class="btn bg-blue-500 text-white p-3 rounded-xl text-sm font-bold hover:bg-blue-600">💧 浇水</button>
+                    <button onclick="action('sun')" class="btn bg-yellow-500 text-white p-3 rounded-xl text-sm font-bold hover:bg-yellow-600">☀️ 光照</button>
+                    <button onclick="action('play')" class="btn bg-pink-500 text-white p-3 rounded-xl text-sm font-bold hover:bg-pink-600">🎵 互动</button>
+                </div>
+            </div>
+
+            <!-- 班级排行榜 -->
+            <div class="glass p-4">
+                <h4 class="font-bold mb-3 flex justify-between">
+                    <span>🏆 班级排行榜</span>
+                    <button onclick="toggleRank()" class="text-xs text-purple-600">刷新</button>
+                </h4>
+                <div id="rankList" class="space-y-2 text-sm">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+
+            <button onclick="logout()" class="w-full mt-4 p-3 text-gray-500 text-sm hover:text-gray-700">← 退出登录</button>
+        </div>
+    </div>
+
+    <script>
+        // 数据存储（使用localStorage，学生自己手机/电脑保存）
+        let currentUser = null;
+        let gameData = {};
+        
+        // 模拟班级数据（实际应用中可以从腾讯文档读取）
+        let classData = {
+            '三1班': [
+                {name: '小明', pet: '🌵', level: 5, score: 1250},
+                {name: '小红', pet: '🐱', level: 8, score: 2340},
+                {name: '小刚', pet: '🐶', level: 3, score: 890}
+            ],
+            '三2班': [
+                {name: '小华', pet: '🌻', level: 6, score: 1560},
+                {name: '小丽', pet: '🐱', level: 4, score: 1100},
+                {name: '小强', pet: '🌵', level: 7, score: 1890}
+            ]
+        };
+
+        function enterClass(className) {
+            currentUser = { class: className };
+            document.getElementById('classSelect').classList.add('hidden');
+            document.getElementById('studentLogin').classList.remove('hidden');
+            document.getElementById('classTitle').textContent = className;
+        }
+
+        function backToClass() {
+            document.getElementById('studentLogin').classList.add('hidden');
+            document.getElementById('classSelect').classList.remove('hidden');
+        }
+
+        function login() {
+            const name = document.getElementById('studentName').value.trim();
+            if(!name) { alert('请输入姓名'); return; }
+            
+            currentUser.name = name;
+            
+            // 检查是否已有存档
+            const saved = localStorage.getItem('ecoGarden_' + currentUser.class + '_' + name);
+            if(saved) {
+                gameData = JSON.parse(saved);
+                startGame();
+            } else {
+                document.getElementById('studentLogin').classList.add('hidden');
+                document.getElementById('petSelect').classList.remove('hidden');
+            }
+        }
+
+        function selectPet(emoji, name, type) {
+            gameData = {
+                pet: emoji,
+                petName: name,
+                type: type,
+                level: 1,
+                exp: 0,
+                diamonds: 100,
+                water: 80,
+                sun: 80,
+                mood: 80
+            };
+            saveData();
+            startGame();
+        }
+
+        function startGame() {
+            document.getElementById('petSelect').classList.add('hidden');
+            document.getElementById('studentLogin').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            
+            document.getElementById('displayClass').textContent = currentUser.class;
+            document.getElementById('displayName').textContent = currentUser.name;
+            document.getElementById('petEmoji').textContent = gameData.pet;
+            document.getElementById('petNameDisplay').textContent = gameData.petName;
+            document.getElementById('petTypeDisplay').textContent = gameData.type === 'plant' ? '🌱 植物系' : '🐾 动物系';
+            
+            updateUI();
+            renderRank();
+            startDecay();
+        }
+
+        function updateUI() {
+            document.getElementById('diamonds').textContent = gameData.diamonds;
+            document.getElementById('level').textContent = gameData.level;
+            document.getElementById('waterText').textContent = gameData.water + '%';
+            document.getElementById('waterBar').style.width = gameData.water + '%';
+            document.getElementById('sunText').textContent = gameData.sun + '%';
+            document.getElementById('sunBar').style.width = gameData.sun + '%';
+            document.getElementById('moodText').textContent = gameData.mood + '%';
+            document.getElementById('moodBar').style.width = gameData.mood + '%';
+        }
+
+        function action(type) {
+            if(type === 'water' && gameData.water < 100) {
+                gameData.water = Math.min(100, gameData.water + 15);
+                gameData.exp += 5;
+            }
+            if(type === 'sun' && gameData.sun < 100) {
+                gameData.sun = Math.min(100, gameData.sun + 15);
+                gameData.exp += 5;
+            }
+            if(type === 'play' && gameData.mood < 100) {
+                gameData.mood = Math.min(100, gameData.mood + 20);
+                gameData.exp += 10;
+            }
+            
+            // 升级检查
+            if(gameData.exp >= gameData.level * 50) {
+                gameData.level++;
+                gameData.exp = 0;
+                gameData.diamonds += 50;
+                alert('🎉 升级了！现在 Lv.' + gameData.level + '，获得50钻石！');
+            }
+            
+            saveData();
+            updateUI();
+        }
+
+        function interact() {
+            gameData.mood = Math.min(100, gameData.mood + 5);
+            gameData.exp += 2;
+            saveData();
+            updateUI();
+            
+            // 点击动画
+            const pet = document.getElementById('petEmoji');
+            pet.style.transform = 'scale(1.2)';
+            setTimeout(() => pet.style.transform = '', 200);
+        }
+
+        function saveData() {
+            localStorage.setItem('ecoGarden_' + currentUser.class + '_' + currentUser.name, JSON.stringify(gameData));
+            
+            // 更新班级排行榜数据
+            const classKey = currentUser.class;
+            const existing = classData[classKey].find(s => s.name === currentUser.name);
+            if(existing) {
+                existing.pet = gameData.pet;
+                existing.level = gameData.level;
+                existing.score = gameData.diamonds + gameData.level * 100;
+            } else {
+                classData[classKey].push({
+                    name: currentUser.name,
+                    pet: gameData.pet,
+                    level: gameData.level,
+                    score: gameData.diamonds + gameData.level * 100
+                });
+            }
+        }
+
+        function renderRank() {
+            const list = classData[currentUser.class].sort((a,b) => b.score - a.score).slice(0, 5);
+            document.getElementById('rankList').innerHTML = list.map((s,i) => `
+                <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg ${s.name === currentUser.name ? 'ring-2 ring-purple-400' : ''}">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold ${i<3 ? 'text-yellow-600' : 'text-gray-400'}">#${i+1}</span>
+                        <span class="text-lg">${s.pet}</span>
+                        <span>${s.name}</span>
+                    </div>
+                    <span class="font-bold text-purple-600">Lv.${s.level}</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleRank() {
+            renderRank();
+        }
+
+        function startDecay() {
+            setInterval(() => {
+                gameData.water = Math.max(0, gameData.water - 2);
+                gameData.sun = Math.max(0, gameData.sun - 3);
+                gameData.mood = Math.max(0, gameData.mood - 1);
+                updateUI();
+                saveData();
+            }, 10000); // 每10秒衰减一次
+        }
+
+        function logout() {
+            if(confirm('确定要退出吗？你的进度已自动保存。')) {
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
